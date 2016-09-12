@@ -1,0 +1,32 @@
+Robert Lowman
+HW00 Questions
+9/10/16
+CS364 Operating Systems
+
+1. The two main functions of the operating system are to provide application
+programmers a clean abstract set of resources and to manage these hardware
+resources.
+
+2. Instructions that access input/ output devices are only usable in kernel mode
+so that the drivers can read and write to the registers. 
+
+3. (a) Because if the interrupts are disabled in user mode instead of kernel
+mode, the CPU is not going to be able to decide which device to let their
+signals run first.
+
+   (c) Having the system clock being off from the actual time can be catastrophic
+as the computer would think it is a completely differnt time than it actually is
+so this instruction should only be done in kernel mode to ensure that the clock
+is being set to the right time and not done accidently in user mode.
+
+   (d) The memory map should only be changed in kernel mode so that the memory is
+not altered when it is not supposed to and cause issues in the programs being ran
+by the operating system 
+
+4. A process table is needed in a timesharing system to handle vital information
+for each process such as register content and address space so that the process
+can be restarted again later.
+
+5. a
+
+6. Yes, the write system can return a value 
