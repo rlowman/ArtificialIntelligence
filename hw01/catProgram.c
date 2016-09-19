@@ -17,35 +17,40 @@ int main(int argc, char * argv[]) {
   int numRead;
   int numWrote;
   int returnVal;
-
-  //**************************************************
-  //If a command is given (-n), decrease fileCount by 1
-  
+  int n = 0;
   int fileCount = argc - 1;
+
+  if(strcmp(argv[fileCount], "-n") == 0 ||
+     strcmp(argv[fileCount], "--number") == 0) {
+    fileCount = fileCount - 1;
+    n = 1;
+  }
   int * inFiles = malloc(sizeof(int) * fileCount);
   
-
   int skip = 0;
-  for(int i = 1; i < fileCount; i = i + 1) {
-    int temp = argv[1];
-    if(inFile == -1) {         //If the given file was invalid, then give error
+  int i = 1;
+  int fileIndex = 0;
+  while(i < fileCount && skip == 0) {
+    int temp = open(argv[i], O_RDONLY);
+    if(temp == -1) {         //If the given file was invalid, then give error
       printf("Error opening input file");
-      return 2;
+      skip = 1;
+      returnVal = 2;
     }
-  }
-
-  outFile = open(argv[2] O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
-
-  if(outFile == -1) {
-    
-  }
-
-  numRead = read(inFile, buffer, BUFFER_SIZE);
-
-  while(numRead > 0) {
-    numWrote = write(outFile, buffer, numRead);
-    if(numWrote < numRead) {
-      printf(
+    else {
+      inFiles[fileIndex] = temp;
+      fileIndex = fileIndex + 1;
+      i = i + 1;
     }
   }
   
+  for(int index = 0; index < fileCount; index = index + 1) {
+    numRead = read(inFile, buffer, BUFFER_SIZE);
+    while(numRead > 0) {
+      
+      if(numWrote < numRead) {
+        printf();
+      }
+    }
+  }
+}
