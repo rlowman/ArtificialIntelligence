@@ -12,10 +12,11 @@
 #define BUFFER_SIZE 1024
 
 int main(int argc, char * argv[]) { 
-  int outFile
-  char buffer[BUFFER_SIZE];
+  int outFile;
+  char buffer[BUFFER_SIZE + 1];
+  buffer[BUFFER_SIZE] = '\0';
   int numRead;
-  int numWrote;
+  int lineCount = 1;
   int returnVal;
   int n = 0;
   int fileCount = argc - 1;
@@ -25,32 +26,45 @@ int main(int argc, char * argv[]) {
     fileCount = fileCount - 1;
     n = 1;
   }
-  int * inFiles = malloc(sizeof(int) * fileCount);
   
   int skip = 0;
   int i = 1;
-  int fileIndex = 0;
-  while(i < fileCount && skip == 0) {
-    int temp = open(argv[i], O_RDONLY);
+  while(i <= fileCount && skip == 0) {
+    int temp;
+    if(strcmp(argv[i], "-") == 0) {
+      temp = open(STDIN_FILENO, O_RDONLY);
+    }
+    else {
+      temp = open(argv[i], O_RDONLY);
+    }
     if(temp == -1) {         //If the given file was invalid, then give error
       printf("Error opening input file");
       skip = 1;
       returnVal = 2;
     }
     else {
-      inFiles[fileIndex] = temp;
-      fileIndex = fileIndex + 1;
+      numRead = read(temp, buffer, BUFFER_SIZE);
+      printf("%d", numRead);
+      while(numRead > 0) {
+	if(n == 1) {
+	  char * p;
+	  p = strchr(buffer, '/n');
+	  while(p!=NULL) {
+	    char temp[
+	    p = strchr(p+1, 
+	  }
+        }
+        else {
+          printf("%s", buffer);
+          for(int c = 0; c < 1024; c = c + 1) {
+            buffer[c] = '\0';
+          }
+        }
+        numRead = read(temp, buffer, BUFFER_SIZE);
+      }
       i = i + 1;
     }
+    close(temp);
   }
-  
-  for(int index = 0; index < fileCount; index = index + 1) {
-    numRead = read(inFile, buffer, BUFFER_SIZE);
-    while(numRead > 0) {
-      
-      if(numWrote < numRead) {
-        printf();
-      }
-    }
-  }
+  return 0;
 }
