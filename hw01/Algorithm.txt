@@ -1,0 +1,31 @@
+Robert Lowman
+Algorithm Proposal
+9/18/16
+CS364: Operating Systems
+
+       My schdueling algorithm that I will be proposing is priority-based, where
+the main priority is importance of the process. The way I see it, the two main
+factors of a process are importance, and time it takes for the process to run.
+Time the process will take to run will also be a factor of the process, as the
+more important a process is deemed by the user, then the more time will be
+alloted for the process to run before the CPU lets another process of high
+priority to run. Essentially, the processes that are short and important will be
+ran first, and processes that are longer and less important will take longer to
+be completed as they will not be allowed to take up all the CPU space to finish
+since they are not considered important. When an important process is cut off
+before being finished, it will be re-placed in the queue based on time left, so
+that was processes that are close to being finished can be put before processes
+that could potentially bog up the CPU. In my predictions, this is the most
+absolute fair algorithm, as it allows important processes to be finished first,
+but does not bog up the CPU for processes that take a long time. As a result,
+efficency is decreased as it could take a while for all processes to be complete
+if there is a list long processes in the waiting as the CPU will have to be
+switching back and forth. While this algorithm is extremely fair, one issue I
+see with it is that it is going to take an extremely long time for the CPU to
+finish unimportant processes that are going to take a long time to finish, as
+the CPU time alloted for this process will not be very long and therefore will
+need multiple cycles to finish. Also, it could be slightly annoying for the user
+to have to rate each process based on importance, so if this was to implemented
+a complicated algorithm for determining importance of each CPU process would
+probably want to be utilized. 
+
