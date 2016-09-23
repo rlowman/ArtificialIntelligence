@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
+#include <utmp.h>
 
 int main(int argc, char * argv[]) {
   int fileNumber = open("/var/run/utmp", O_RDONLY);
@@ -17,11 +18,11 @@ int main(int argc, char * argv[]) {
     //error
   }
   else {
-    struct utmp * information = malloc(sizeof(information));
-    int bytesRead = read(fileNumber, information, sizeof(information));
+    struct utmp * information = malloc(sizeof(struct utmp));
+    int bytesRead = read(fileNumber, information, sizeof(struct utmp));
     printf("Name: %s", information->ut_user);
     printf("Terminal: %s", information->ut_line);
-    printf("Time: %d", information->tv_sec);
+    printf("Time: %d", information->ut_tv->tv_sec);
     printf("Remote Computer: %s", information->ut_host);
   }
   return 0;
