@@ -17,9 +17,12 @@ int main(int argc, char * argv[]) {
     //error
   }
   else {
-    struct utmp * information = malloc(sizeof(struct utmp));
-    int bytesRead = read(fileNumber, utmp, sizeof(utmp));
-    
+    struct utmp * information = malloc(sizeof(information));
+    int bytesRead = read(fileNumber, information, sizeof(information));
+    printf("Name: %s", information->ut_user);
+    printf("Terminal: %s", information->ut_line);
+    printf("Time: %d", information->tv_sec);
+    printf("Remote Computer: %s", information->ut_host);
   }
   return 0;
 }
