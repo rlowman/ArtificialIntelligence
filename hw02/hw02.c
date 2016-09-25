@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <utmp.h>
+#include <time.h>
 
 int main(int argc, char * argv[]) {
   int fileNumber = open("/var/run/utmp", O_RDONLY);
@@ -20,9 +21,13 @@ int main(int argc, char * argv[]) {
   else {
     struct utmp * information = malloc(sizeof(struct utmp));
     int bytesRead = read(fileNumber, information, sizeof(struct utmp));
-    printf("Name: %s", information->ut_user);
-    printf("Terminal: %s", information->ut_line);
-    printf("Time: %d", information->ut_tv->tv_sec);
+    time_t seconds = (time_t)information->ut_tv.tv_sec;
+    char buffer[60];
+    struct tm * time = localtime(&seconds);
+    strftime(buffer, 60, "%Y-%m-%d %H:%M", time);
+    printf("Name: %s\n", information->ut_user);
+    printf("Terminal: %s\n", information->ut_line);
+    printf("Time: %s\n", buffer);
     printf("Remote Computer: %s", information->ut_host);
   }
   return 0;
