@@ -21,14 +21,18 @@ int main(int argc, char * argv[]) {
   else {
     struct utmp * information = malloc(sizeof(struct utmp));
     int bytesRead = read(fileNumber, information, sizeof(struct utmp));
-    time_t seconds = (time_t)information->ut_tv.tv_sec;
-    char buffer[60];
-    struct tm * time = localtime(&seconds);
-    strftime(buffer, 60, "%Y-%m-%d %H:%M", time);
-    printf("Name: %s\n", information->ut_user);
-    printf("Terminal: %s\n", information->ut_line);
-    printf("Time: %s\n", buffer);
-    printf("Remote Computer: %s", information->ut_host);
+    while(bytesRead > 0) {
+      short type = information->ut_type;
+      if(type == USER_PROCESS) {
+	time_t seconds = (time_t)information->ut_tv.tv_sec;
+	char buffer[60];
+	struct tm * time = localtime(&seconds);
+	strftime(buffer, 60, "%Y-%m-%d %H:%M", time);
+	printf("%s %s         %s (%s)\n", information->ut_user,
+	       information->ut_line, buffer, information->ut_host);
+      }
+      bytesRead = read(fileNumber, information, sizeof(struct utmp));
+    }
   }
   return 0;
 }
