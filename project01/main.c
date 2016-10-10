@@ -10,13 +10,17 @@
 // The port number of the port we are requesting information from.
 int port = DEFAULT_PORT;
 
+pthread_mutex_t mutex;
+
+phread_cond_t openSpace;
+
 int workQueue[8];
 
-int nextPush = 0;
+volatile int nextPush;
 
-int nextPop = 0;
+volatile int nextPop;
 
-int filled = 0;
+volatile int filled;
 
 /**
  * Sets the new worker thread count when requested by the user.
@@ -53,14 +57,20 @@ void * initialize_to_server(void * foo) {
   int currentFileDescriptor;
   void * returnValue;
   while(1) {
+
+    currentFileDescriptor = server_get_connection(listen_socket);
+    workQueue[nextPush] = currentFileDescriptor;
+    nextPush = (nextPush + 1) % 8;
+    pthread_mutex_lock(&mutex);
+    filled ++;
     
     if(filled != 8) {
-      currentFileDescriptor = server_get_connection(listen_socket);
-      workQueue[nextPush] = currentFileDescriptor;
-      nextPush = (nextPush + 1) % 8;
-      printf("Filled: %d", filled);
-      filled = filled + 1;
+      phread_cond_broadcast(&openSpace);
     }
+    else {
+      phread_cond_wait(&openSpace, &mutex);
+    }
+    pthread_mutex_unlock(&mutex);
   }
   return returnValue;
 }
@@ -78,7 +88,7 @@ void * initialize_worker_thread(void * index) {
       int fd = workQueue[nextPop];
       nextPop = (nextPop + 1) % 8;
       filled = filled - 1;
-      printf("Time to read");
+      
     }
   }
   return returnValue;
@@ -105,11 +115,18 @@ int main(int argc, char * argv[]) {
     }
   }
 
+  filled = 0;
+  nextPush = 0;  
+  nextPop = 0;
+
+  pthread_mutex_init(&mutex, NULL);
+  pthread_cond_int(&openSpace);
+  
   pthread_t dispatcherThread;
   pthread_t workerThreads[threadDefault];
 
   int status = pthread_create(&dispatcherThread, NULL,
-			      initialize_to_server, (void *)0);
+			      initialize_worker_thread, (void *)0);
 
   if(status != 0) {
     printf("Error %d creating dispather thread. \n", status);
@@ -124,5 +141,12 @@ int main(int argc, char * argv[]) {
       exit(1);
     }
   }
+
+  pthread_join(dispatcherThread, NULL);
+
+  for(i = 0; i < threadDefault; i ++) {
+    pthread_join(workerThreads[i], NULL);		 
+  }
+  
   return 0;
 }
