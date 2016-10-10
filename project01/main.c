@@ -12,7 +12,9 @@ int port = DEFAULT_PORT;
 
 pthread_mutex_t mutex;
 
-phread_cond_t openSpace;
+pthread_cond_t openSpace;
+
+pthread_cond_t popSpace;
 
 int workQueue[8];
 
@@ -59,16 +61,16 @@ void * initialize_to_server(void * foo) {
   while(1) {
 
     currentFileDescriptor = server_get_connection(listen_socket);
+    pthread_mutex_lock(&mutex);
     workQueue[nextPush] = currentFileDescriptor;
     nextPush = (nextPush + 1) % 8;
-    pthread_mutex_lock(&mutex);
     filled ++;
     
     if(filled != 8) {
-      phread_cond_broadcast(&openSpace);
+      pthread_cond_broadcast(&openSpace);
     }
     else {
-      phread_cond_wait(&openSpace, &mutex);
+      pthread_cond_wait(&openSpace, &mutex);
     }
     pthread_mutex_unlock(&mutex);
   }
@@ -84,12 +86,20 @@ void * initialize_to_server(void * foo) {
 void * initialize_worker_thread(void * index) {
   void * returnValue;
   while(1) {
+
+    pthread_mutex_lock(&mutex);
+    int fd = workQueue[nextPop];
+    nextPop = (nextPop + 1) % 8;
+    filled = filled - 1;
+
+    
     if(filled != 0) {
-      int fd = workQueue[nextPop];
-      nextPop = (nextPop + 1) % 8;
-      filled = filled - 1;
-      
+      pthread_cond_broadcast(&popSpace);
     }
+    else {
+      pthread_cond_wait(&popSpace, &mutex);
+    }
+    pthread_mutex_unlock(&mutex);
   }
   return returnValue;
 }
@@ -121,6 +131,7 @@ int main(int argc, char * argv[]) {
 
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_int(&openSpace);
+  pthread_cond_int(&popSpace);
   
   pthread_t dispatcherThread;
   pthread_t workerThreads[threadDefault];
