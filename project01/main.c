@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "proj01-networking.h"
 
+#define BUFFER_SIZE 100
+
 // The port number of the port we are requesting information from.
 int port = DEFAULT_PORT;
 
@@ -49,7 +51,7 @@ int selectPort() {
 }
 
 /**
- * Connects the dispatcher thread to the server
+ * Connects the dispatcher thread to the server.
  * 
  * @param foo Unused.
  * @return Unused.
@@ -85,14 +87,15 @@ void * initialize_to_server(void * foo) {
  **/
 void * initialize_worker_thread(void * index) {
   void * returnValue;
+  char buffer[BUFFER_SIZE + 1];
+  int bytesRead;
+  int serial;
   while(1) {
 
     pthread_mutex_lock(&mutex);
     int fd = workQueue[nextPop];
     nextPop = (nextPop + 1) % 8;
     filled = filled - 1;
-
-    
     if(filled != 0) {
       pthread_cond_broadcast(&popSpace);
     }
@@ -100,6 +103,18 @@ void * initialize_worker_thread(void * index) {
       pthread_cond_wait(&popSpace, &mutex);
     }
     pthread_mutex_unlock(&mutex);
+
+    memset(buffer, '\0', BUFFER_SIZE + 1);
+    bytesRead = read(fd, buffer, BUFFER_SIZE);
+    if(bytesRead == 0) {
+      printf("Unable to read from File Descriptor: %d", fd);
+    }
+    else {
+      char dest[bytesRead + 1];
+      strncpy(dest, buffer, bytesRead + 1);
+
+      serial = atoi(dest);
+    }
   }
   return returnValue;
 }
