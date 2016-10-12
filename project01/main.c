@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "proj01-networking.h"
 
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 1024
 
 // The port number of the port we are requesting information from.
 int port = DEFAULT_PORT;
@@ -90,10 +90,16 @@ void * initialize_worker_thread(void * index) {
   char buffer[BUFFER_SIZE + 1];
   int bytesRead;
   int serial;
+  int size;
+  int fd;
+  char dest[bytesRead + 1];
+  int checksumFile;
+  long checksum;
+  int bytesWritten;
   while(1) {
 
     pthread_mutex_lock(&mutex);
-    int fd = workQueue[nextPop];
+    fd = workQueue[nextPop];
     nextPop = (nextPop + 1) % 8;
     filled = filled - 1;
     if(filled != 0) {
@@ -110,10 +116,24 @@ void * initialize_worker_thread(void * index) {
       printf("Unable to read from File Descriptor: %d", fd);
     }
     else {
-      char dest[bytesRead + 1];
       strncpy(dest, buffer, bytesRead + 1);
-
       serial = atoi(dest);
+      checksumFile = open(dest, O_RDONLY);
+      checksum = 0;
+      bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
+      while(bytesRead > 0) {
+	for(int i = 0; i < bytesRead; i ++) {
+	  checksum = checksum + (long)buffer[i];
+	  bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
+	}
+      }
+      size = snprintf(buffer, BUFFER_SIZE, "%d %s %ld", serial,
+		      filesName, checksum);
+      bytesWritten = write(fd, buffer, size);
+      if(bytesWritten == 0) {
+	printf("Could not write back to socket %d", fd);
+      }
+      close(fd);
     }
   }
   return returnValue;
