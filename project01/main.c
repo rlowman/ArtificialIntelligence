@@ -5,6 +5,11 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
 #include "proj01-networking.h"
 
 #define BUFFER_SIZE 1024
@@ -57,11 +62,14 @@ int selectPort() {
  * @return Unused.
  **/
 void * initialize_to_server(void * foo) {
+  printf("Entered dipathcer thread");
   int listen_socket = server_initialize_networking(port);
+  printf("got socket");
   int currentFileDescriptor;
   void * returnValue;
   while(1) {
 
+    printf("Dispatcher loop");
     currentFileDescriptor = server_get_connection(listen_socket);
     pthread_mutex_lock(&mutex);
     workQueue[nextPush] = currentFileDescriptor;
@@ -92,12 +100,11 @@ void * initialize_worker_thread(void * index) {
   int serial;
   int size;
   int fd;
-  char dest[bytesRead + 1];
   int checksumFile;
   long checksum;
   int bytesWritten;
   while(1) {
-
+    printf("worker thread loop");
     pthread_mutex_lock(&mutex);
     fd = workQueue[nextPop];
     nextPop = (nextPop + 1) % 8;
@@ -116,6 +123,7 @@ void * initialize_worker_thread(void * index) {
       printf("Unable to read from File Descriptor: %d", fd);
     }
     else {
+      char dest[bytesRead + 1];
       strncpy(dest, buffer, bytesRead + 1);
       serial = atoi(dest);
       checksumFile = open(dest, O_RDONLY);
@@ -128,7 +136,7 @@ void * initialize_worker_thread(void * index) {
 	}
       }
       size = snprintf(buffer, BUFFER_SIZE, "%d %s %ld", serial,
-		      filesName, checksum);
+		      dest, checksum);
       bytesWritten = write(fd, buffer, size);
       if(bytesWritten == 0) {
 	printf("Could not write back to socket %d", fd);
@@ -140,50 +148,55 @@ void * initialize_worker_thread(void * index) {
 }
 
 int main(int argc, char * argv[]) {
-  int threadDefault = 4;
-  if(argc == 2) {
-    if(strcmp(argv[1], "-p") == 0) {
-      port = selectPort();
-    }
-    else if(strcmp(argv[1], "-t") == 0) {
-      threadDefault = selectThreadCount;
-    }
-  }
-  else if(argc == 3) {
-    if(strcmp(argv[1], "-p") == 0 ||
-       strcmp(argv[2], "-p") == 0) {
-      port = selectPort();
-    }
-    if(strcmp(argv[1], "-t") == 0 ||
-       strcmp(argv[2], "-t") == 0) {
-      threadDefault = selectThreadCount;
-    }
-  }
+  int threadDefault = 1;
+  printf("Here");
+  /* if(argc == 2) { */
+  /*   if(strcmp(argv[1], "-p") == 0) { */
+  /*     port = selectPort(); */
+  /*   } */
+  /*   else if(strcmp(argv[1], "-t") == 0) { */
+  /*     threadDefault = selectThreadCount; */
+  /*   } */
+  /* } */
+  /* else if(argc == 3) { */
+  /*   if(strcmp(argv[1], "-p") == 0 || */
+  /*      strcmp(argv[2], "-p") == 0) { */
+  /*     port = selectPort(); */
+  /*   } */
+  /*   if(strcmp(argv[1], "-t") == 0 || */
+  /*      strcmp(argv[2], "-t") == 0) { */
+  /*     threadDefault = selectThreadCount; */
+  /*   } */
+  /* } */
 
   filled = 0;
   nextPush = 0;  
   nextPop = 0;
 
+  printf("created global variables");
   pthread_mutex_init(&mutex, NULL);
-  pthread_cond_int(&openSpace);
-  pthread_cond_int(&popSpace);
-  
+  pthread_cond_init(&openSpace, NULL);
+  pthread_cond_init(&popSpace, NULL);
+
+  printf("created mutexes");
   pthread_t dispatcherThread;
   pthread_t workerThreads[threadDefault];
 
   int status = pthread_create(&dispatcherThread, NULL,
-			      initialize_worker_thread, (void *)0);
+			      initialize_to_server, (void *)0);
+
+  printf("created dispatcher thread");
 
   if(status != 0) {
     printf("Error %d creating dispather thread. \n", status);
     exit(1);
   }
   long i;
-  for(i = 0; i < 1; i++) {
+  for(i = 0; i < threadDefault; i++) {
     status = pthread_create(&workerThreads[i], NULL,
-			      initialize_to_server, (void *)i);
+			      initialize_worker_thread, (void *)i);
     if(status != 0) {
-      printf("Error %d creating worker thread number: %l. \n", status, i + 1);
+      printf("Error %d creating worker thread number: %ld. \n", status, i + 1);
       exit(1);
     }
   }
