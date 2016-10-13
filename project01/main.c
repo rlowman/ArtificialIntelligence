@@ -129,7 +129,6 @@ void * initialize_worker_thread(void * index) {
       checksum = 0;
       bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
       while(bytesRead > 0) {
-	printf("entered loop\n");
 	for(int i = 0; i < bytesRead; i ++) {
 	  checksum = checksum + (long)buffer[i];
 	}
@@ -142,6 +141,7 @@ void * initialize_worker_thread(void * index) {
 	printf("Could not write back to socket %d", fd);
       }
       close(fd);
+      close(checksumFile);
     }
   }
   return returnValue;
@@ -154,7 +154,7 @@ int main(int argc, char * argv[]) {
       port = selectPort();
     }
     else if(strcmp(argv[1], "-t") == 0) {
-      threadDefault = selectThreadCount;
+      threadDefault = (int)selectThreadCount;
     }
   }
   else if(argc == 3) {
@@ -164,7 +164,7 @@ int main(int argc, char * argv[]) {
     }
     if(strcmp(argv[1], "-t") == 0 ||
        strcmp(argv[2], "-t") == 0) {
-      threadDefault = selectThreadCount;
+      threadDefault = (int)selectThreadCount;
     }
   }
 
@@ -172,19 +172,15 @@ int main(int argc, char * argv[]) {
   nextPush = 0;  
   nextPop = 0;
 
-  printf("created global variables");
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_init(&openSpace, NULL);
   pthread_cond_init(&workAvailable , NULL);
 
-  printf("created mutexes");
   pthread_t dispatcherThread;
   pthread_t workerThreads[threadDefault];
 
   int status = pthread_create(&dispatcherThread, NULL,
 			      initialize_to_server, (void *)0);
-
-  printf("created dispatcher thread");
 
   if(status != 0) {
     printf("Error %d creating dispather thread. \n", status);
