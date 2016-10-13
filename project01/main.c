@@ -67,7 +67,6 @@ void * initialize_to_server(void * foo) {
   void * returnValue;
   while(1) {
 
-    printf("Dispatcher loop");
     currentFileDescriptor = server_get_connection(listen_socket);
     pthread_mutex_lock(&mutex);
     workQueue[nextPush] = currentFileDescriptor;
@@ -105,7 +104,7 @@ void * initialize_worker_thread(void * index) {
   int bytesWritten;
   while(1) {
     pthread_mutex_lock(&mutex);
-    if(filled == 0) {
+    while(filled == 0) {
       pthread_cond_wait(&workAvailable, &mutex);
     }
     fd = workQueue[nextPop];
@@ -133,8 +132,8 @@ void * initialize_worker_thread(void * index) {
 	printf("entered loop\n");
 	for(int i = 0; i < bytesRead; i ++) {
 	  checksum = checksum + (long)buffer[i];
-	  bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
 	}
+	bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
       }
       size = snprintf(buffer, BUFFER_SIZE, "%d %s %ld", serial,
 		      fileName, checksum);
@@ -150,24 +149,24 @@ void * initialize_worker_thread(void * index) {
 
 int main(int argc, char * argv[]) {
   int threadDefault = 4;
-  /* if(argc == 2) { */
-  /*   if(strcmp(argv[1], "-p") == 0) { */
-  /*     port = selectPort(); */
-  /*   } */
-  /*   else if(strcmp(argv[1], "-t") == 0) { */
-  /*     threadDefault = selectThreadCount; */
-  /*   } */
-  /* } */
-  /* else if(argc == 3) { */
-  /*   if(strcmp(argv[1], "-p") == 0 || */
-  /*      strcmp(argv[2], "-p") == 0) { */
-  /*     port = selectPort(); */
-  /*   } */
-  /*   if(strcmp(argv[1], "-t") == 0 || */
-  /*      strcmp(argv[2], "-t") == 0) { */
-  /*     threadDefault = selectThreadCount; */
-  /*   } */
-  /* } */
+  if(argc == 2) {
+    if(strcmp(argv[1], "-p") == 0) {
+      port = selectPort();
+    }
+    else if(strcmp(argv[1], "-t") == 0) {
+      threadDefault = selectThreadCount;
+    }
+  }
+  else if(argc == 3) {
+    if(strcmp(argv[1], "-p") == 0 ||
+       strcmp(argv[2], "-p") == 0) {
+      port = selectPort();
+    }
+    if(strcmp(argv[1], "-t") == 0 ||
+       strcmp(argv[2], "-t") == 0) {
+      threadDefault = selectThreadCount;
+    }
+  }
 
   filled = 0;
   nextPush = 0;  
