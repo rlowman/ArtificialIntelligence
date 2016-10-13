@@ -21,7 +21,7 @@ pthread_mutex_t mutex;
 
 pthread_cond_t openSpace;
 
-pthread_cond_t popSpace;
+pthread_cond_t workAvailable;
 
 int workQueue[8];
 
@@ -62,9 +62,7 @@ int selectPort() {
  * @return Unused.
  **/
 void * initialize_to_server(void * foo) {
-  printf("Entered dipathcer thread");
   int listen_socket = server_initialize_networking(port);
-  printf("got socket");
   int currentFileDescriptor;
   void * returnValue;
   while(1) {
@@ -75,8 +73,9 @@ void * initialize_to_server(void * foo) {
     workQueue[nextPush] = currentFileDescriptor;
     nextPush = (nextPush + 1) % 8;
     filled ++;
+    pthread_cond_broadcast(&workAvailable);
     
-    if(filled != 8) {
+    if(filled < 8) {
       pthread_cond_broadcast(&openSpace);
     }
     else {
@@ -88,6 +87,7 @@ void * initialize_to_server(void * foo) {
 }
 
 /**
+
  * Implements the workers thread functionality
  *
  * @param foo Unused.
@@ -104,19 +104,16 @@ void * initialize_worker_thread(void * index) {
   long checksum;
   int bytesWritten;
   while(1) {
-    printf("worker thread loop");
     pthread_mutex_lock(&mutex);
+    if(filled == 0) {
+      pthread_cond_wait(&workAvailable, &mutex);
+    }
     fd = workQueue[nextPop];
     nextPop = (nextPop + 1) % 8;
     filled = filled - 1;
-    if(filled != 0) {
-      pthread_cond_broadcast(&popSpace);
-    }
-    else {
-      pthread_cond_wait(&popSpace, &mutex);
-    }
+    pthread_cond_broadcast(&openSpace);
     pthread_mutex_unlock(&mutex);
-
+    
     memset(buffer, '\0', BUFFER_SIZE + 1);
     bytesRead = read(fd, buffer, BUFFER_SIZE);
     if(bytesRead == 0) {
@@ -125,18 +122,22 @@ void * initialize_worker_thread(void * index) {
     else {
       char dest[bytesRead + 1];
       strncpy(dest, buffer, bytesRead + 1);
+      char * fileName = strchr(dest, ' ');
+      fileName ++;
+
       serial = atoi(dest);
-      checksumFile = open(dest, O_RDONLY);
+      checksumFile = open(fileName, O_RDONLY);
       checksum = 0;
       bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
       while(bytesRead > 0) {
+	printf("entered loop\n");
 	for(int i = 0; i < bytesRead; i ++) {
 	  checksum = checksum + (long)buffer[i];
 	  bytesRead = read(checksumFile, buffer, BUFFER_SIZE);
 	}
       }
       size = snprintf(buffer, BUFFER_SIZE, "%d %s %ld", serial,
-		      dest, checksum);
+		      fileName, checksum);
       bytesWritten = write(fd, buffer, size);
       if(bytesWritten == 0) {
 	printf("Could not write back to socket %d", fd);
@@ -148,8 +149,7 @@ void * initialize_worker_thread(void * index) {
 }
 
 int main(int argc, char * argv[]) {
-  int threadDefault = 1;
-  printf("Here");
+  int threadDefault = 4;
   /* if(argc == 2) { */
   /*   if(strcmp(argv[1], "-p") == 0) { */
   /*     port = selectPort(); */
@@ -176,7 +176,7 @@ int main(int argc, char * argv[]) {
   printf("created global variables");
   pthread_mutex_init(&mutex, NULL);
   pthread_cond_init(&openSpace, NULL);
-  pthread_cond_init(&popSpace, NULL);
+  pthread_cond_init(&workAvailable , NULL);
 
   printf("created mutexes");
   pthread_t dispatcherThread;
