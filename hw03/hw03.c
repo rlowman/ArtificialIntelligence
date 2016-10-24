@@ -28,7 +28,7 @@ int main(int argc, char * argv[]) {
       memset(buffer, '\0', BUFFER_SIZE + 1);
       read(fd, buffer, BUFFER_SIZE);
       strtok(buffer, " ");         //Skipping over the current process id
-      char * name = strtok(NULL, " ");
+      char * name = strtok(, " ");
       char * name_chopped = name + 1;
       name_chopped[strlen(name_chopped) - 1] = '\0';
       printf("%s\t%d", name_chopped, process);
@@ -44,7 +44,7 @@ int main(int argc, char * argv[]) {
 			    "proc/%d/stat", parentId);
 	char parentName[size + 1];
 	parentName[size] = '\0';
-	strncpy(openName, buffer, size);
+	strncpy(parentName, buffer, size);
 	int parentFD = open(parentName, O_RDONLY);
 
 	memset(buffer, '\0', BUFFER_SIZE + 1);
