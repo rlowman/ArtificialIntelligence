@@ -1,0 +1,25 @@
+Robert Lowman
+CS364: Operating Systems
+Homework #3 Questions
+10/24/2016
+
+1. Interrupt handlers deal directly with the hardware of the computer
+and therefore need to be developed in a language the directly translates
+to machine code. This is so because assembly does not need a runtime like
+most upper-level langauges and has more direct access to the stack pointer.
+
+2. User-space because the read() call we are familiar with requires
+a lot of information such as file name and how much to read that cannot
+be collected in kernel mode, therefore user-space threads would word better.
+
+3. Each thread has a different idea what is in each register, so it would not
+make sense to attempt to store a general value for the register as it would
+be different for each thread.
+
+4. 3,9,6,5
+   If x < 3 put between 9 and 6
+   If x = 4 put between 6 and 5
+   If x = 7,8 put last
+   If x > 9 put between 3 and 9
+
+5. 61
