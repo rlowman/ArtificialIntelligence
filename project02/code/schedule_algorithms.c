@@ -66,8 +66,7 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed(struct Process * runn
 							   struct ProcessList * blocked,
 							   struct ProcessList * waiting,
 							   long * tick,
-							   long * contextSwitchTicks) {
-   static int sinceLastSwitch = 0;      
+							   long * contextSwitchTicks) {      
 
   if( running != NULL &&                    
       ready->head != NULL ) {          
@@ -86,9 +85,7 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed(struct Process * runn
 		     SCHEDULER_FIRST_COME_FIRST_SERVED );
                                        
     running = dequeueProcess( ready );
-    sinceLastSwitch = 0;
-  }
-  sinceLastSwitch++;                   
+  }                 
 
   return running;                      
 }

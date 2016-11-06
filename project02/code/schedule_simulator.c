@@ -172,6 +172,11 @@ int main( int argc, char * argv[] )
       running = schedulePreemptiveRoundRobin( running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks, quantumRR );
       break;
 
+    case SCHEDULER_FIRST_COME_FIRST_SERVED:
+      running = scheduleFirstComeFirstServed(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      break;
+    
+
     default:
       printf( "Error: Attempt to use an unrecognized scheduling algorithm.\n" );
       exit( 1 );
