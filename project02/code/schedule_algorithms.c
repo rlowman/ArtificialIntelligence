@@ -68,13 +68,6 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed(struct Process * runn
 							   long * tick,
 							   long * contextSwitchTicks) {      
 
-  if( running != NULL &&                    
-      ready->head != NULL ) {          
-                                        
-    enqueueProcess( ready, running );
-    running = NULL;
-  }
-
   if( running == NULL &&                
       ready->head != NULL ) {           
     doContextSwitch( ready,
@@ -89,3 +82,117 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed(struct Process * runn
 
   return running;                      
 }
+
+struct Process * scheduleNonpreemptiveShortestJobFirst(struct Process * running,
+						       struct ProcessList * ready,
+						       struct ProcessList * blocked,
+						       struct ProcessList * waiting,
+						       long * tick,
+						       long * contextSwitchTicks) {      
+
+  if( running == NULL &&                
+      ready->head != NULL ) {           
+    doContextSwitch( ready,
+		     blocked,
+		     waiting,
+		     tick,
+		     contextSwitchTicks,
+		     SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB );
+                                       
+    running = dequeueProcessSJF( ready );
+  }                 
+
+  return running;                      
+}
+
+struct Process * schedulePreemptiveHighestPriority(struct Process * running,
+						   struct ProcessList * ready,
+						   struct ProcessList * blocked,
+						   struct ProcessList * waiting,
+						   long * tick,
+						   long * contextSwitchTicks,
+						   int quantum) {
+  static int sinceLastSwitch = 0;       
+  if( running != NULL &&                
+      sinceLastSwitch >= quantum &&     
+      ready->head != NULL ) {           
+    enqueueProcess( ready, running );
+    running = NULL;
+  }
+
+  if( running == NULL &&               
+      ready->head != NULL ) {           
+    doContextSwitch( ready,
+		     blocked,
+		     waiting,
+		     tick,
+		     contextSwitchTicks,
+		     SCHEDULER_PRIORITY );
+                                    
+    running = dequeueProcessHP( ready );
+    sinceLastSwitch = 0;
+  }
+  sinceLastSwitch++;                    
+  return running;                       
+}
+
+struct Process * schedulePreemptiveMultipleQueues(struct Process * running,
+						   struct ProcessList * ready,
+						   struct ProcessList * blocked,
+						   struct ProcessList * waiting,
+						   long * tick,
+						   long * contextSwitchTick) {
+  static int sinceLastSwitch = 0;       
+  if( running != NULL &&                
+      sinceLastSwitch >= quantum &&     
+      ready->head != NULL ) {           
+    enqueueProcess( ready, running );
+    running = NULL;
+  }
+
+  if( running == NULL &&               
+      ready->head != NULL ) {           
+    doContextSwitch( ready,
+		     blocked,
+		     waiting,
+		     tick,
+		     contextSwitchTicks,
+		     SCHEDULER_MULTIPLE_QUEUES );
+                                    
+    running = dequeueProcessMQ( ready );
+    sinceLastSwitch = 0;
+  }
+  sinceLastSwitch++;                    
+  return running;                       
+}
+
+struct Process * schedulePreemptiveLongestJobFirst( struct Process * running,
+					       struct ProcessList * ready,
+					       struct ProcessList * blocked,
+					       struct ProcessList * waiting,
+					       long * tick,
+					       long * contextSwitchTicks,
+					       int quantum ) {
+  static int sinceLastSwitch = 0;       
+  if( running != NULL &&                
+      sinceLastSwitch >= quantum &&     
+      ready->head != NULL ) {           
+    enqueueProcess( ready, running );
+    running = NULL;
+  }
+
+  if( running == NULL &&               
+      ready->head != NULL ) {           
+    doContextSwitch( ready,
+		     blocked,
+		     waiting,
+		     tick,
+		     contextSwitchTicks,
+		     SCHEDULER_PREEMPTIVE_LONGEST_JOB );
+                                    
+    running = dequeueProcessLJF( ready );
+    sinceLastSwitch = 0;
+  }
+  sinceLastSwitch++;                    
+  return running;  
+}  

@@ -173,10 +173,25 @@ int main( int argc, char * argv[] )
       break;
 
     case SCHEDULER_FIRST_COME_FIRST_SERVED:
-      running = scheduleFirstComeFirstServed(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      running = scheduleNonpreemptiveFirstComeFirstServed(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      break;
+
+    case SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB:
+      running = scheduleNonpreemptiveShortestJobFirst(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      break;
+
+    case SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY:
+      running = schedulePreemptiveHighestPriority(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks, quantumRR );
+      break;
+
+    case SCHEDULER_MULTIPLE_QUEUES:
+      running = schedulePreemptiveMultipleQueues(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      break;
+
+    case SCHEDULER_PREEMPTIVE_LONGEST_JOB:
+      running = schedulePreemptiveLongestJobFirst(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks, quantumRR );
       break;
     
-
     default:
       printf( "Error: Attempt to use an unrecognized scheduling algorithm.\n" );
       exit( 1 );
@@ -247,6 +262,26 @@ void processArguments( int argc, char * argv[] ) {
       if( strcmp( argv[i], "RR" ) == 0 ||
 	  strcmp( argv[i], "RoundRobin" ) == 0 ) {
 	scheduler = SCHEDULER_ROUND_ROBIN;
+      }
+      else if( strcmp( argv[i], "FCFS" ) == 0 ||
+	       strcmp( argv[i], "FirstComeFirstServed" ) == 0 ) {
+	scheduler = SCHEDULER_FIRST_COME_FIRST_SERVED;
+      }
+      else if( strcmp( argv[i], "SJF" ) == 0 ||
+	       strcmp( argv[i], "ShortestJobFirst" ) == 0 ) {
+	scheduler = SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB;
+      }
+      else if( strcmp( argv[i], "HPF" ) == 0 ||
+	       strcmp( argv[i], "HighestPriorityFirst" ) == 0 ) {
+	scheduler = SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY;
+      }
+      else if( strcmp( argv[i], "MQ" ) == 0 ||
+	       strcmp( argv[i], "MultipleQueues" ) == 0 ) {
+	scheduler = SCHEDULER_MULTIPLE_QUEUES;
+      }
+      else if( strcmp( argv[i], "LJF" ) == 0 ||
+	       strcmp( argv[i], "LongestJobFirst" ) == 0 ) {
+	scheduler = SCHEDULER_PREEMPTIVE_LONGEST_JOB;
       }
       else {
 	printf( "Error: The -s argument must be followed by a scheduling algorithm name.\n" );

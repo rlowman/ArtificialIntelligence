@@ -31,6 +31,16 @@ struct Process {
   int priority;
 
   /**
+   * How long it takes this process to run.
+   **/
+  int time;
+
+  /**
+   * The queue-level this process is on (only used for MQ).
+   **/
+  int queueLevel;
+
+  /**
    * What time this process was created.
    **/
   long startTime;

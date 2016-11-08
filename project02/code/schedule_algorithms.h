@@ -7,10 +7,16 @@
 //// The different scheduler options:
 
 #define SCHEDULER_ROUND_ROBIN 1
-// TODO: Continue creating these for each scheduling algorithm added, each 
-//   getting a unique non-zero value.
 
 #define SCHEDULER_FIRST_COME_FIRST_SERVED 2
+
+#define SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB 3
+
+#define SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY 4
+
+#define SCHEDULER_MULTIPLE_QUEUES 5
+
+#define SCHEDULER_PREEMPTIVE_LONGEST_JOB 6
 
 
 //// The actual scheduling algorithms:
@@ -41,3 +47,33 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed( struct Process * run
 					       struct ProcessList * waiting,
 					       long * tick,
 					       long * contextSwitchTicks);
+
+struct Process * scheduleNonpreemptiveShortestJobFirst( struct Process * running,
+					       struct ProcessList * ready,
+					       struct ProcessList * blocked,
+					       struct ProcessList * waiting,
+					       long * tick,
+					       long * contextSwitchTicks);
+
+struct Process * schedulePreemptiveHighestPriority( struct Process * running,
+					       struct ProcessList * ready,
+					       struct ProcessList * blocked,
+					       struct ProcessList * waiting,
+					       long * tick,
+					       long * contextSwitchTicks,
+					       int quantum );
+
+struct Process * schedulePreemptiveMultipleQueues( struct Process * running,
+					       struct ProcessList * ready,
+					       struct ProcessList * blocked,
+					       struct ProcessList * waiting,
+					       long * tick,
+					       long * contextSwitchTicks);
+
+struct Process * schedulePreemptiveLongestJobFirst( struct Process * running,
+					       struct ProcessList * ready,
+					       struct ProcessList * blocked,
+					       struct ProcessList * waiting,
+					       long * tick,
+					       long * contextSwitchTicks,
+					       int quantum );

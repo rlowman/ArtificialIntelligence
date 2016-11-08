@@ -48,6 +48,106 @@ struct Process * dequeueProcess( struct ProcessList * list )
   return current;                       // Return the process.
 }
 
+struct Process * dequeueProcessSJF( struct ProcessList * list )
+{
+  struct ProcessListNode * current = list->head;
+  struct ProcessListNode * tempBeforeNode;
+  struct ProcessListNode * beforeShortest;
+  int shortest = current->data->time;
+  struct ProcessListNode * shortestNode;
+  struct Process * returnValue;
+  if( list->head == list->tail ) {
+    list->head = NULL;                  
+    list->tail = NULL;
+    returnValue = current->data;
+    free(current);
+  }
+  else {                                
+    current = current->next;
+    tempBeforeNode = current;
+    while(current != NULL) {
+      if(current->data->time < shortest) {
+	shortest = current->data->time;
+	shortestNode = current;
+	beforeShortest = tempBeforeNode;
+      }
+      tempBeforeNode = current;
+      current = current->next;
+    }
+
+    if(list->head == shortestNode) {
+      list->head = shortestNode->next;
+    }
+    else if(list->tail == shortestNode) {
+      list->tail = beforeShortest;
+    }
+    else {
+      beforeShortest->next = shortestNode->next;
+    }
+    returnValue = shortestNode->data;
+    free(shortestNode);
+  }                       
+  return returnValue;                      
+}
+
+struct Process * dequeueProcessHP(struct ProcessList * list) {
+  struct ProcessListNode * current = list->head;
+  struct ProcessListNode * tempBeforeNode;
+  struct ProcessListNode * beforeHighest;
+  int highest = current->data->priority;
+  struct ProcessListNode * highestNode;
+  struct Process * returnValue;
+  if( list->head == list->tail ) {
+    list->head = NULL;                  
+    list->tail = NULL;
+    returnValue = current->data;
+    free(current);
+  }
+  else {                                
+    current = current->next;
+    tempBeforeNode = current;
+    while(current != NULL) {
+      if(current->data->priority > highest) {
+	highest = current->data->time;
+	highestNode = current;
+	beforeHighest = tempBeforeNode;
+      }
+      tempBeforeNode = current;
+      current = current->next;
+    }
+
+    if(list->head == highestNode) {
+      list->head = highestNode->next;
+    }
+    else if(list->tail == highestNode) {
+      list->tail = beforeHighest;
+    }
+    else {
+      beforeHighest->next = highestNode->next;
+    }
+    returnValue = highestNode->data;
+    free(highestNode);
+  }
+  return returnValue;
+}
+
+struct Process * dequeueProcessMQ( struct ProcessList * list )
+{
+  struct Process * current = list->head->data;
+  struct Process * returnValue;
+  struct ProcessListNode * dying = list->head;
+  if( list->head == list->tail ) {      // If this was the only node, then
+    list->head = NULL;                  //   there are none left.
+    list->tail = NULL;
+  }
+  else {                                // Otherwise just move forward.
+    list->head = list->head->next;
+    list->head->prev = NULL;
+  }
+  free( dying );                        // The node is no longer needed.
+  return returnValue;                       // Return the process.
+}
+
 void insertProcessInOrder( struct ProcessList * list,
 			   struct Process * proc )
 {

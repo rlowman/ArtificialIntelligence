@@ -23,8 +23,15 @@ void printUsage() {
   printf( "Simulates a scheduling algorithm on a process load.\n\n" );
   printf( "Allowable algorithms:\n" );
   printf( "\tRR or RoundRobin\tPreemptive Round-Robin\n" );
+  printf( "\tFCFS or FirstComeFirstServed\tNonpreemptive First-Come First-Served\n");
+  printf( "\tSJF or ShortestJobFirst\tNonpreemptive Shortest Job First\n");
+  printf( "\tHPF or HighestPriorityFirst\tPreemptive Highest Priority First\n");
+  printf( "\tMQ or MultipleQueues\tPreemptive Multiple Queues\n");
+  printf( "\tLJF or LongestJobFirst\tPreemptive Longest Job First\n");
   printf( "\n" );
-  printf( "A quantum must be specified if the Preemptive Round-Robin algorithm is selected.\n" );
+  printf( "A quantum must be specified if the Preemptive Round-Robin, Preemptive\n" );
+  printf( "Highest Priority First, or Preemptive Longest Job First algorithm is selected.\n" );
+  printf( "The amount of queues to use must be specified if Preemptive Multiple Queues is selected.\n");
 }
 
 void insertIntoReadyState( struct Process * process,
@@ -37,7 +44,21 @@ void insertIntoReadyState( struct Process * process,
     enqueueProcess( ready, process );
     break;
 
-    
+  case SCHEDULER_FIRST_COME_FIRST_SERVED:
+    enqueueProcess( ready, process );
+    break;
+
+  case SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB:
+    enqueueProcess( ready, process );
+    break;
+
+  case SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY:
+    enqueueProcess( ready, process );
+    break;
+
+  case SCHEDULER_MULTIPLE_QUEUES:
+    enqueueProcess( ready, process );
+    break;
 
   default:                              // An unsupported scheduler is in use.
     printf( "Error: Attempt to insert into ready state using unknown scheduler.\n" );
