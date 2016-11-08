@@ -127,7 +127,7 @@ struct Process * schedulePreemptiveHighestPriority(struct Process * running,
 		     waiting,
 		     tick,
 		     contextSwitchTicks,
-		     SCHEDULER_PRIORITY );
+		     SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY );
                                     
     running = dequeueProcessHP( ready );
     sinceLastSwitch = 0;
@@ -141,8 +141,9 @@ struct Process * schedulePreemptiveMultipleQueues(struct Process * running,
 						   struct ProcessList * blocked,
 						   struct ProcessList * waiting,
 						   long * tick,
-						   long * contextSwitchTick) {
-  static int sinceLastSwitch = 0;       
+						   long * contextSwitchTicks) {
+  static int sinceLastSwitch = 0;
+  int quantum = 5;
   if( running != NULL &&                
       sinceLastSwitch >= quantum &&     
       ready->head != NULL ) {           

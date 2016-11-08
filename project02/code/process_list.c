@@ -148,6 +148,48 @@ struct Process * dequeueProcessMQ( struct ProcessList * list )
   return returnValue;                       // Return the process.
 }
 
+struct Process * dequeueProcessLJF( struct ProcessList * list )
+{
+  struct ProcessListNode * current = list->head;
+  struct ProcessListNode * tempBeforeNode;
+  struct ProcessListNode * beforeLongest;
+  int longest = current->data->time;
+  struct ProcessListNode * LongestNode;
+  struct Process * returnValue;
+  if( list->head == list->tail ) {
+    list->head = NULL;                  
+    list->tail = NULL;
+    returnValue = current->data;
+    free(current);
+  }
+  else {                                
+    current = current->next;
+    tempBeforeNode = current;
+    while(current != NULL) {
+      if(current->data->time > longest) {
+	longest = current->data->time;
+	longestNode = current;
+	beforeLongest = tempBeforeNode;
+      }
+      tempBeforeNode = current;
+      current = current->next;
+    }
+
+    if(list->head == longestNode) {
+      list->head = longestNode->next;
+    }
+    else if(list->tail == longestNode) {
+      list->tail = beforeLongest;
+    }
+    else {
+      beforeLongest->next = LongestNode->next;
+    }
+    returnValue = longestNode->data;
+    free(longestNode);
+  }                       
+  return returnValue;                      
+}
+
 void insertProcessInOrder( struct ProcessList * list,
 			   struct Process * proc )
 {

@@ -37,7 +37,6 @@ void printUsage() {
 void insertIntoReadyState( struct Process * process,
 			   struct ProcessList * ready,
 			   int scheduler ) {
-  // TODO: For every new scheduler added, update this function.
   switch( scheduler ) {
 
   case SCHEDULER_ROUND_ROBIN:           // Round-Robin just operates as a FIFO.
@@ -57,6 +56,10 @@ void insertIntoReadyState( struct Process * process,
     break;
 
   case SCHEDULER_MULTIPLE_QUEUES:
+    enqueueProcess( ready, process );
+    break;
+
+  case SCHEDULER_PREEMPTIVE_LONGEST_JOB:
     enqueueProcess( ready, process );
     break;
 
