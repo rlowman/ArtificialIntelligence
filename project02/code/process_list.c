@@ -6,6 +6,7 @@
 //   processes.
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "execution_unit.h"
 #include "execution_unit_list.h"
@@ -50,65 +51,104 @@ struct Process * dequeueProcess( struct ProcessList * list )
 
 struct Process * dequeueProcessSJF( struct ProcessList * list )
 {
+  printf("The contents of the list:\n");
+  struct ProcessListNode * mover = list->head;
+  while(mover != NULL){
+    printf("\t%s %d", mover->data->name, mover->data->time);
+    mover = mover->next;
+  }
+  printf("here\n");
   struct ProcessListNode * current = list->head;
+  printf("here1\n");
   struct ProcessListNode * tempBeforeNode;
+  printf("here2\n");
   struct ProcessListNode * beforeShortest;
+  printf("here3\n");
   int shortest = current->data->time;
-  struct ProcessListNode * shortestNode;
+  printf("here4\n");
+  struct ProcessListNode * shortestNode = current;
+  printf("here5\n");
   struct Process * returnValue;
+  printf("here6\n");
   if( list->head == list->tail ) {
-    list->head = NULL;                  
-    list->tail = NULL;
+    printf("here7\n");
     returnValue = current->data;
+    printf("here8\n");
+    list->head = NULL;
+    printf("here9\n");
+    list->tail = NULL;
+    printf("here10\n");
     free(current);
+    printf("here11\n");
   }
   else {                                
-    current = current->next;
     tempBeforeNode = current;
+    current = current->next;
+    printf("1\n");
+    printf("2\n");
     while(current != NULL) {
       if(current->data->time < shortest) {
+	printf("3\n");
 	shortest = current->data->time;
+	printf("4\n");
 	shortestNode = current;
+	printf("5\n");
 	beforeShortest = tempBeforeNode;
+	printf("6\n");
       }
       tempBeforeNode = current;
+      printf("7\n");
       current = current->next;
+      printf("8\n");
     }
 
     if(list->head == shortestNode) {
+      printf("9\n");
       list->head = shortestNode->next;
     }
     else if(list->tail == shortestNode) {
+      printf("10\n");
       list->tail = beforeShortest;
+      beforeShortest->next = NULL;
     }
     else {
+      printf("11\n");
       beforeShortest->next = shortestNode->next;
     }
+    printf("12\n");
     returnValue = shortestNode->data;
+    printf("13\n");
     free(shortestNode);
+    printf("14\n");
   }                       
   return returnValue;                      
 }
 
 struct Process * dequeueProcessHP(struct ProcessList * list) {
+  printf("The contents of the list:\n");
+  struct ProcessListNode * mover = list->head;
+  while(mover != NULL){
+    printf("\t%s %d\n", mover->data->name, mover->data->priority);
+    mover = mover->next;
+  }
   struct ProcessListNode * current = list->head;
   struct ProcessListNode * tempBeforeNode;
   struct ProcessListNode * beforeHighest;
   int highest = current->data->priority;
-  struct ProcessListNode * highestNode;
+  struct ProcessListNode * highestNode = current;
   struct Process * returnValue;
   if( list->head == list->tail ) {
+    returnValue = current->data;
     list->head = NULL;                  
     list->tail = NULL;
-    returnValue = current->data;
     free(current);
   }
   else {                                
-    current = current->next;
     tempBeforeNode = current;
+    current = current->next;
     while(current != NULL) {
       if(current->data->priority > highest) {
-	highest = current->data->time;
+	highest = current->data->priority;
 	highestNode = current;
 	beforeHighest = tempBeforeNode;
       }
@@ -121,6 +161,7 @@ struct Process * dequeueProcessHP(struct ProcessList * list) {
     }
     else if(list->tail == highestNode) {
       list->tail = beforeHighest;
+      beforeHighest->next = NULL;
     }
     else {
       beforeHighest->next = highestNode->next;
@@ -154,7 +195,7 @@ struct Process * dequeueProcessLJF( struct ProcessList * list )
   struct ProcessListNode * tempBeforeNode;
   struct ProcessListNode * beforeLongest;
   int longest = current->data->time;
-  struct ProcessListNode * LongestNode;
+  struct ProcessListNode * longestNode = current;
   struct Process * returnValue;
   if( list->head == list->tail ) {
     list->head = NULL;                  
@@ -163,8 +204,8 @@ struct Process * dequeueProcessLJF( struct ProcessList * list )
     free(current);
   }
   else {                                
-    current = current->next;
     tempBeforeNode = current;
+    current = current->next;
     while(current != NULL) {
       if(current->data->time > longest) {
 	longest = current->data->time;
@@ -180,9 +221,10 @@ struct Process * dequeueProcessLJF( struct ProcessList * list )
     }
     else if(list->tail == longestNode) {
       list->tail = beforeLongest;
+      beforeLongest->next = NULL;
     }
     else {
-      beforeLongest->next = LongestNode->next;
+      beforeLongest->next = longestNode->next;
     }
     returnValue = longestNode->data;
     free(longestNode);

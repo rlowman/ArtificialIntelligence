@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "execution_unit.h"
 #include "execution_unit_list.h"
@@ -69,7 +70,8 @@ struct Process * scheduleNonpreemptiveFirstComeFirstServed(struct Process * runn
 							   long * contextSwitchTicks) {      
 
   if( running == NULL &&                
-      ready->head != NULL ) {           
+      ready->head != NULL ) {
+   
     doContextSwitch( ready,
 		     blocked,
 		     waiting,
@@ -91,13 +93,15 @@ struct Process * scheduleNonpreemptiveShortestJobFirst(struct Process * running,
 						       long * contextSwitchTicks) {      
 
   if( running == NULL &&                
-      ready->head != NULL ) {           
+      ready->head != NULL ) {
+    printf("before switch\n");
     doContextSwitch( ready,
 		     blocked,
 		     waiting,
 		     tick,
 		     contextSwitchTicks,
 		     SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB );
+    printf("after\n");
                                        
     running = dequeueProcessSJF( ready );
   }                 

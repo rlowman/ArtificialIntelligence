@@ -75,7 +75,22 @@ bool isReadyStateEmpty( struct ProcessList * ready,
   switch( scheduler ) {
 
   case SCHEDULER_ROUND_ROBIN:           // Round-Robin just checks if queue is
-    return ready->head == NULL;         //   empty.
+    return ready->head == NULL;
+
+  case SCHEDULER_FIRST_COME_FIRST_SERVED:
+    return ready->head == NULL;
+
+  case SCHEDULER_NONPREEMPTIVE_SHORTEST_JOB:          
+    return ready->head == NULL;
+
+  case SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY:
+    return ready->head == NULL;
+
+  case SCHEDULER_MULTIPLE_QUEUES:
+    return ready->head == NULL;
+
+  case SCHEDULER_PREEMPTIVE_LONGEST_JOB:
+    return ready->head == NULL;
 
   default:                              // Unknown scheduler.
     printf( "Error: Attempt to check for emptiness of the ready state using unknown scheduler.\n" );

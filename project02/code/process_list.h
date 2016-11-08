@@ -58,6 +58,34 @@ void enqueueProcess( struct ProcessList * list,
  **/
 struct Process * dequeueProcess( struct ProcessList * list );
 
+/**
+ * Remove the process with the shortest job.
+ *
+ * @param list A pointer to the list from which we are dequeing.
+ **/
+struct Process * dequeueProcessSJF( struct ProcessList * list );
+
+/**
+ * Remove the process with the highest priority.
+ *
+ * @param list A pointer to the list from which we are dequeing.
+ **/
+struct Process * dequeueProcessHP( struct ProcessList * list );
+
+/**
+ * Remove the process in Multiple Queues order.
+ *
+ * @param list A pointer to the list from which we are dequeing.
+ **/
+struct Process * dequeueProcessMQ( struct ProcessList * list );
+
+/**
+ * Remove the first process from a list of processes.
+ *
+ * @param list A pointer to the list from which we are dequeing.
+ **/
+struct Process * dequeueProcessLJF( struct ProcessList * list );
+
 
 /**
  * Insert a process into a list that is ordered by time remaining in current execution unit.

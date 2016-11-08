@@ -24,6 +24,7 @@ struct Process * createProcTypeA( char name[NAME_SIZE],
   creation->totalInteractiveWaitTime = 0;
   creation->numberOfInteractiveWaits = 0;
   creation->queueLevel = 0;
+  creation->time = 1372;
   
   if( delay != 0 ) {
     enqueueExecutionUnit( &creation->units, delay, TYPE_NOT_YET_STARTED );
@@ -61,6 +62,7 @@ struct Process * createProcTypeB( char name[NAME_SIZE],
   creation->totalInteractiveWaitTime = 0;
   creation->numberOfInteractiveWaits = 0;
   creation->queueLevel = 0;
+  creation->time = 754;
 
   if( delay != 0 ) {
     enqueueExecutionUnit( &creation->units, delay, TYPE_NOT_YET_STARTED );
@@ -108,6 +110,7 @@ struct Process * createProcTypeC( char name[NAME_SIZE],
   creation->totalInteractiveWaitTime = 0;
   creation->numberOfInteractiveWaits = 0;
   creation->queueLevel = 0;
+  creation->time = 5074;
   
   if( delay != 0 ) {
     enqueueExecutionUnit( &creation->units, delay, TYPE_NOT_YET_STARTED );
@@ -137,6 +140,7 @@ struct Process * createProcTypeD( char name[NAME_SIZE],
   creation->totalInteractiveWaitTime = 0;
   creation->numberOfInteractiveWaits = 0;
   creation->queueLevel = 0;
+  creation->time = 153;
 
   if( delay != 0 ) {
     enqueueExecutionUnit( &creation->units, delay, TYPE_NOT_YET_STARTED );
