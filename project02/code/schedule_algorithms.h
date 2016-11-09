@@ -68,7 +68,8 @@ struct Process * schedulePreemptiveMultipleQueues( struct Process * running,
 					       struct ProcessList * blocked,
 					       struct ProcessList * waiting,
 					       long * tick,
-					       long * contextSwitchTicks);
+					       long * contextSwitchTicks,
+					       int numberOfQueues);
 
 struct Process * schedulePreemptiveLongestJobFirst( struct Process * running,
 					       struct ProcessList * ready,

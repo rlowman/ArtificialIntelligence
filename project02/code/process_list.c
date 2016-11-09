@@ -33,6 +33,28 @@ void enqueueProcess( struct ProcessList * list,
   }
 }
 
+void enqueueProcessMQ( struct ProcessList * list,
+		     struct Process * proc,
+		     int setQueueLevel)
+{
+                                        // Create the new node.
+  struct ProcessListNode * newNode = malloc( sizeof( struct ProcessListNode ) );
+  newNode->next = NULL;
+  proc->queueLevel = setQueueLevel;
+  newNode->data = proc;
+
+  if( list->head == NULL ) {            // If it was empty this is now the
+    list->head = newNode;               //   first and last node.
+    list->tail = newNode;
+    newNode->prev = NULL;
+  }
+  else {                                // Otherwise add it to the end.
+    newNode->prev = list->tail;
+    list->tail->next = newNode;
+    list->tail = newNode;
+  }
+}
+
 struct Process * dequeueProcess( struct ProcessList * list )
 {
   struct Process * current = list->head->data;
@@ -51,25 +73,12 @@ struct Process * dequeueProcess( struct ProcessList * list )
 
 struct Process * dequeueProcessSJF( struct ProcessList * list )
 {
-  printf("The contents of the list:\n");
-  struct ProcessListNode * mover = list->head;
-  while(mover != NULL){
-    printf("\t%s %d", mover->data->name, mover->data->time);
-    mover = mover->next;
-  }
-  printf("here\n");
   struct ProcessListNode * current = list->head;
-  printf("here1\n");
   struct ProcessListNode * tempBeforeNode;
-  printf("here2\n");
   struct ProcessListNode * beforeShortest;
-  printf("here3\n");
   int shortest = current->data->time;
-  printf("here4\n");
   struct ProcessListNode * shortestNode = current;
-  printf("here5\n");
   struct Process * returnValue;
-  printf("here6\n");
   if( list->head == list->tail ) {
     printf("here7\n");
     returnValue = current->data;
@@ -172,21 +181,57 @@ struct Process * dequeueProcessHP(struct ProcessList * list) {
   return returnValue;
 }
 
-struct Process * dequeueProcessMQ( struct ProcessList * list )
+struct Process * dequeueProcessMQ( struct ProcessList * list, int numberOfQueues )
 {
-  struct Process * current = list->head->data;
+  struct ProcessListNode * current = list->head;
+  struct ProcessListNode * tempBeforeNode;
+  struct ProcessListNode * beforePopNode;
+  int currentQueue = numberOfQueues;
+  struct ProcessListNode * popNode;
   struct Process * returnValue;
-  struct ProcessListNode * dying = list->head;
-  if( list->head == list->tail ) {      // If this was the only node, then
-    list->head = NULL;                  //   there are none left.
+  if( list->head == list->tail ) {
+    list->head = NULL;                  
     list->tail = NULL;
+    returnValue = current->data;
+    free(current);
   }
-  else {                                // Otherwise just move forward.
-    list->head = list->head->next;
-    list->head->prev = NULL;
-  }
-  free( dying );                        // The node is no longer needed.
-  return returnValue;                       // Return the process.
+  else {
+    int foundNode = 0;
+    while(foundNode == 0) {
+      if(current->data->queueLevel == currentQueue) {
+	popNode = current;
+	foundNode = 1;
+      }
+      else {
+	tempBeforeNode = current;
+	current = current->next;
+	while(current != NULL && foundNode == 0) {
+	  if(current->data->queueLevel == currentQueue) {
+	    popNode = current;
+	    beforePopNode = tempBeforeNode;
+	    foundNode = 1;
+	  }
+	  current = current->next;
+	}
+	current = list->head;
+	currentQueue--;
+      }
+    }
+
+    if(list->head == popNode) {
+      list->head = popNode->next;
+    }
+    else if(list->tail == popNode) {
+      list->tail = beforePopNode;
+      beforePopNode->next = NULL;
+    }
+    else {
+      beforePopNode->next = popNode->next;
+    }
+    returnValue = popNode->data;
+    free(popNode);
+  }                       
+  return returnValue;
 }
 
 struct Process * dequeueProcessLJF( struct ProcessList * list )

@@ -145,13 +145,22 @@ struct Process * schedulePreemptiveMultipleQueues(struct Process * running,
 						   struct ProcessList * blocked,
 						   struct ProcessList * waiting,
 						   long * tick,
-						   long * contextSwitchTicks) {
+						   long * contextSwitchTicks,
+						   int numberOfQueues) {
   static int sinceLastSwitch = 0;
   int quantum = 5;
+  for(int i = 1; i < running->queueLevel; i ++) {
+    quantum = quantum * 2;
+  }
   if( running != NULL &&                
       sinceLastSwitch >= quantum &&     
-      ready->head != NULL ) {           
-    enqueueProcess( ready, running );
+      ready->head != NULL ) {
+    if(running->queueLevel > 1) {
+      enqueueProcessMQ( ready, running, running->queueLevel - 1);
+    }
+    else {
+      enqueueProcessMQ( ready, running, running->queueLevel);
+    }
     running = NULL;
   }
 
@@ -164,7 +173,7 @@ struct Process * schedulePreemptiveMultipleQueues(struct Process * running,
 		     contextSwitchTicks,
 		     SCHEDULER_MULTIPLE_QUEUES );
                                     
-    running = dequeueProcessMQ( ready );
+    running = dequeueProcessMQ( ready, numberOfQueues );
     sinceLastSwitch = 0;
   }
   sinceLastSwitch++;                    

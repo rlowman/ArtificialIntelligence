@@ -67,7 +67,7 @@ struct ProcessList readyRR;             // A queue of processes currently in
                                         //   may store the ready processes in
                                         //   some other data structure as
                                         //   appropriate.
-
+int numOfQueues;
 
 /**
  * Process the command-line arguments received by the program.
@@ -185,7 +185,7 @@ int main( int argc, char * argv[] )
       break;
 
     case SCHEDULER_MULTIPLE_QUEUES:
-      running = schedulePreemptiveMultipleQueues(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks);
+      running = schedulePreemptiveMultipleQueues(running, &readyRR, &blocked, &waiting, &tick, &contextSwitchTicks, numOfQueues);
       break;
 
     case SCHEDULER_PREEMPTIVE_LONGEST_JOB:
@@ -245,6 +245,7 @@ void printStatistics() {
   printf( "Priority-weighted average turnaround was %f milliseconds.\n", (double)weightedExecutionTimes / totalWeight );
   printf( "Average response time was %f milliseconds.\n", (double)totalInteractiveWaitTime / totalInteractiveWaitTimeCount );
   printf( "Priority-weighted average response time was %f milliseconds.\n", (double)weightedTotalInteractiveWaitTime / weightedTotalInteractiveWaitTimeCount );
+  printf( "The CPU was idle for %ld milliseconds,\n and %ld were used for context switches.", idleTicks, contextSwitchTicks);
 }
 
 void processArguments( int argc, char * argv[] ) {
@@ -300,6 +301,18 @@ void processArguments( int argc, char * argv[] ) {
 	exit( 1 );
       }
     }
+    else if( strcmp( argv[i], "-n" ) == 0 ) {
+      if( argc == i + 1 ) {
+	printf( "Error: The -n argument must be followed by a positive integer.\n" );
+	exit( 1 );
+      }
+      i++;
+      numOfQueues = atoi( argv[i] );
+      if( numOfQueues <= 0 ) {
+	printf( "Error: The -n argument must be followed by a positive integer.\n" );
+	exit( 1 );
+      }
+    }
     else if( strcmp( argv[i], "-h" ) == 0 || strcmp( argv[i], "--help" ) == 0 ) {
       printUsage();
       exit( 0 );
@@ -316,6 +329,18 @@ void processArguments( int argc, char * argv[] ) {
   }
   if( scheduler == SCHEDULER_ROUND_ROBIN && quantumRR == 0 ) {
     printf( "Error: When using the Preemptive Round-Robin algorithm you must provide a quantum.\n" );
+    exit( 1 );
+  }
+  if( scheduler == SCHEDULER_PREEMPTIVE_HIGHEST_PRIORITY && quantumRR == 0 ) {
+    printf( "Error: When using the Preemptive Highest-Priority algorithm you must provide a quantum.\n" );
+    exit( 1 );
+  }
+  if( scheduler == SCHEDULER_PREEMPTIVE_LONGEST_JOB && quantumRR == 0 ) {
+    printf( "Error: When using the Preemptive Longest-Job-First algorithm you must provide a quantum.\n" );
+    exit( 1 );
+  }
+  if( scheduler == SCHEDULER_MULTIPLE_QUEUES && numOfQueues == 0 ) {
+    printf( "Error: When using the Multiple-Queues algorithm you must provide a number of Queues.\n" );
     exit( 1 );
   }
 }

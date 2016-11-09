@@ -50,6 +50,16 @@ struct ProcessList {
 void enqueueProcess( struct ProcessList * list,
 		     struct Process * proc );
 
+/**
+ * Add a new process to the end of a list of processes.
+ *
+ * @param list A pointer to the list in which it is being enqueued.
+ * @param proc A pointer to a process that should be added to the list.
+ * @param queueLevel the queue level to set the process to
+ **/
+void enqueueProcessMQ( struct ProcessList * list,
+		       struct Process * proc,
+		       int queueLevel);
 
 /**
  * Remove the first process from a list of processes.
@@ -77,7 +87,8 @@ struct Process * dequeueProcessHP( struct ProcessList * list );
  *
  * @param list A pointer to the list from which we are dequeing.
  **/
-struct Process * dequeueProcessMQ( struct ProcessList * list );
+struct Process * dequeueProcessMQ( struct ProcessList * list ,
+				   int numberOfQueues);
 
 /**
  * Remove the first process from a list of processes.

@@ -235,6 +235,7 @@ void moveFinishedBlockedProcesses( struct ProcessList * blocked,
     unblocked = dequeueProcess( blocked );
                                         // If this was an interactive block
                                         //   it affects response time.
+    
     if( unblocked->units.head->data->type == TYPE_INTERACTIVE ) {
       unblocked->lastInteractiveBlockEnd = tick;
     }
@@ -249,6 +250,46 @@ void moveFinishedBlockedProcesses( struct ProcessList * blocked,
       exit( 1 );
     }
     else if( unblocked->units.head->data->type == TYPE_PROCESSING ) {
+      insertIntoReadyState( unblocked, ready, scheduler );
+    }
+    else {
+      printf( "Error: unknown execution unit type %d\n", unblocked->units.head->data->type );
+      exit( 1 );
+    }
+  }
+}
+
+void moveFinishedBlockedProcessesMQ( struct ProcessList * blocked,
+				   struct ProcessList * ready,
+				   long tick,
+				   int scheduler,
+				   int numOfQueues) {
+  struct Process * unblocked;
+  while( blocked->head != NULL && 
+	 blocked->head->data->units.head->data->mSecsLeft == 0 ) {
+                                        // We found a process that is finished
+                                        //   being blocked.
+    unblocked = dequeueProcess( blocked );
+                                        // If this was an interactive block
+                                        //   it affects response time.
+    
+    if( unblocked->units.head->data->type == TYPE_INTERACTIVE ) {
+      unblocked->lastInteractiveBlockEnd = tick;
+    }
+    dequeueExecutionUnit( &unblocked->units );
+    if( unblocked->units.head == NULL ) {
+      printf( "Error: process %s finished while blocked.\n", unblocked->name );
+      exit( 1 );
+    }
+    else if( unblocked->units.head->data->type == TYPE_BLOCKED ||
+	     unblocked->units.head->data->type == TYPE_INTERACTIVE ) {
+      printf( "Error: process %s had two I/O blocks in a row.\n", unblocked->name );
+      exit( 1 );
+    }
+    else if( unblocked->units.head->data->type == TYPE_PROCESSING ) {
+      if(unblocked->queueLevel < numOfQueues) {
+	unblocked->queueLevel = unblocked->queueLevel + 1;
+      }
       insertIntoReadyState( unblocked, ready, scheduler );
     }
     else {
