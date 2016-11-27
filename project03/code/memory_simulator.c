@@ -272,19 +272,74 @@ int selectFrameOptimal( struct PageTable * pageTable,
 int selectFrameNRU( struct PageTable * pageTable )
 {
   int found = 0;
+	for(int i = 0; i < pageTable->numFrames; i ++) {
+		PageTableEntry * temp = pageTable->frames[i];
+		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
+			found ++;
+		}
+	}
+	if(found < 1) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			PageTableEntry * temp = pageTable->frames[i];
+			if(temp->wasReferenced == 0 && temp->wasModified == 1) {
+				found ++;
+			}
+		}
+	}
+	if(found < 1) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			PageTableEntry * temp = pageTable->frames[i];
+			if(temp->wasReferenced == 1 && temp->wasModified == 0) {
+				found ++;
+			}
+		}
+	}
+	if(found < 1) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			PageTableEntry * temp = pageTable->frames[i];
+			if(temp->wasReferenced == 1 && temp->wasModified == 1) {
+				found ++;
+			}
+		}
+	}
+	int r = rand() % found;
+	int returnValue = -1;
+	bool spot = false;
+	int count = 0;
 	int i = 0;
 	while(found < 1 && i < pageTable->numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
-
+			count ++;
 		}
 	}
-  exit( 4 );
+	i = 0;
+	while(found < 1 && i < pageTable->numFrames) {
+		PageTableEntry * temp = pageTable->frames[i];
+		if(temp->wasReferenced == 0 && temp->wasModified == 1) {
+			count ++;
+		}
+	}
+	i = 0;
+	while(found < 1 && i < pageTable->numFrames) {
+		PageTableEntry * temp = pageTable->frames[i];
+		if(temp->wasReferenced == 1 && temp->wasModified == 0) {
+			count ++;
+		}
+	}
+	i = 0;
+	while(found < 1 && i < pageTable->numFrames) {
+		PageTableEntry * temp = pageTable->frames[i];
+		if(temp->wasReferenced == 1 && temp->wasModified == 1) {
+			count ++;
+		}
+	}
+  return returnValue;
 }
 
 int selectFrameFIFO( struct PageTable * pageTable )
 {
-  
+
   exit( 4 );
 }
 
