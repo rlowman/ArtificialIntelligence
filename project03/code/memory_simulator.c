@@ -169,12 +169,14 @@ int main( int argc, char * argv[] ) {
 }
 
 void onClockInterrupt( struct PageTable * pageTable ) {
-  // TODO: Add processing to this function as necessary for new algorithms
   int i;
 
   // Clear the 'R' bit for all pages
   for( i = 0; i < pageTable->numFrames; i++ ) {
-    pageTable->frames[i].wasReferenced = 0;
+		if(pageTable->frames[i].wasRefereneced == 1) {
+			pageTable->frames[i].counter ++;
+		}
+		pageTable->frames[i].wasReferenced = 0;
   }
 }
 
@@ -187,6 +189,7 @@ void onEveryAccess( struct PageTable * pageTable,
   pageTable->frames[used_frame].wasReferenced = 1;
   if( is_write ) {
     pageTable->frames[used_frame].wasModified = 1;
+		pageTable->frames[used_frame].lruTime = time;
   }
 }
 
@@ -272,14 +275,14 @@ int selectFrameOptimal( struct PageTable * pageTable,
 int selectFrameNRU( struct PageTable * pageTable )
 {
   int found = 0;
-	for(int i = 0; i < pageTable->numFrames; i ++) {
+	for(int i = 0; i < pageTable.numFrames; i ++) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
 			found ++;
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable->numFrames; i ++) {
+		for(int i = 0; i < pageTable.numFrames; i ++) {
 			PageTableEntry * temp = pageTable->frames[i];
 			if(temp->wasReferenced == 0 && temp->wasModified == 1) {
 				found ++;
@@ -287,7 +290,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable->numFrames; i ++) {
+		for(int i = 0; i < pageTable.numFrames; i ++) {
 			PageTableEntry * temp = pageTable->frames[i];
 			if(temp->wasReferenced == 1 && temp->wasModified == 0) {
 				found ++;
@@ -295,7 +298,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable->numFrames; i ++) {
+		for(int i = 0; i < pageTable.numFrames; i ++) {
 			PageTableEntry * temp = pageTable->frames[i];
 			if(temp->wasReferenced == 1 && temp->wasModified == 1) {
 				found ++;
@@ -306,7 +309,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 	int returnValue = -1;
 	int count = 0;
 	int i = 0;
-	while(returnValue < 0 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable.numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
 			if(count == r) {
@@ -316,7 +319,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable.numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 1) {
 			if(count == r) {
@@ -326,7 +329,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable.numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 1 && temp->wasModified == 0) {
 			if(count == r) {
@@ -336,7 +339,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable.numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 1 && temp->wasModified == 1) {
 			if(count == r) {
@@ -350,33 +353,63 @@ int selectFrameNRU( struct PageTable * pageTable )
 
 int selectFrameFIFO( struct PageTable * pageTable )
 {
-	long longest = -1;
+	int longest = pageTable->frames[0].fifoTime;
 	int longestIndex = 0;
-	for(int i = 0; i < pageTable->numFrames; i ++) {
-		
+	for(int i = 1; i < pageTable.numFrames; i ++) {
+		if(pageTable->frames[i].fifoTime < longest) {
+			longestIndex = i;
+			longest = pageTable->frames[i].fifoTime;
+		}
 	}
-  return longstIndex;
+  return longestIndex;
 }
 
 int selectFrameSecondChance( struct PageTable * pageTable )
 {
-  // TODO: Write this function
-  printf( "Error: The SC algorithm has not yet been implemented.\n" );
-  exit( 4 );
+	int returnValue = -1;
+	while(returnValue < 0) {
+		int firstIndex = 0;
+		int firstTime = pageTable->frames[0].scTime;
+		for(int i = 1; i < pageTable.numFrames; i ++) {
+			if(pageTable->frames[i].scTime < firsTime) {
+				firstIndex = i;
+			}
+		}
+		if(pageTable->frames[firstIndex].wasReferenced == 0) {
+			returnValue = firstIndex;
+		}
+		else {
+			pageTable->frames[firstIndex].wasReferenced = 0;
+			pageTable->frames[firstIndex].scTime = time;
+		}
+	}
+	return returnValue;
 }
 
 int selectFrameLRU( struct PageTable * pageTable )
 {
-  // TODO: Write this function
-  printf( "Error: The LRU algorithm has not yet been implemented.\n" );
-  exit( 4 );
+	int least = pageTable->frames[0].lruTime;
+	int leastIndex = 0;
+	for(int i = 1; i < pageTable.numFrames; i ++) {
+		if(pageTable->frames[i].lruTime < longest) {
+			leastIndex = i;
+			least = pageTable->frames[i].lruTime;
+		}
+	}
+  return least;
 }
 
 int selectFrameNFU( struct PageTable * pageTable )
 {
-  // TODO: Write this function
-  printf( "Error: The NFU algorithm has not yet been implemented.\n" );
-  exit( 4 );
+	int least = pageTable->frames[0].nfuTime;
+	int leastIndex = 0;
+	for(int i = 1; i < pageTable.numFrames; i ++) {
+		if(pageTable->frames[i].nfuTime < longest) {
+			leastIndex = i;
+			least = pageTable->frames[i].nfuTime;
+		}
+	}
+  return least;
 }
 
 int selectFrameAging( struct PageTable * pageTable )

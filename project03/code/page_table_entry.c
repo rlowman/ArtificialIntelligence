@@ -6,14 +6,16 @@
 
 #include "page_table_entry.h"
 
-void initializePTE( struct PageTableEntry * entry, 
-		    int pageNumber, 
+void initializePTE( struct PageTableEntry * entry,
+		    int pageNumber,
 		    int loadTime ) {
 
-  // TODO: Add initialization here of new fields added to struct PageTableEntry
-  //   This may require adding new parameters to the function.
   entry->pageNumber = pageNumber;
   entry->wasReferenced = 0;
   entry->wasModified = 0;
   entry->nextAccess = loadTime;
+	entry->fifoTime = loadTime;
+	entry->nfuCounter = 0;
+	entry->scTime = loadTime;
+	entry->lruTime = loadTime;
 }

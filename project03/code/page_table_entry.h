@@ -34,6 +34,27 @@ struct PageTableEntry {
    * When will this page next be used, for Optimal algorithm, cached for later.
    **/
   int nextAccess;
+
+  /**
+   * Counter used for NFU algorithm
+   **/
+   int nfuCounter;
+
+   /**
+    * Time compared in Fifo algorithm
+    **/
+   int fifoTime;
+
+   /**
+    * Index of queue for second-chance algorithm
+    **/
+   int scTime;
+
+   /**
+    * Time compared for lru algorithm
+    **/
+   int lruTime;
+
 };
 
 /**
