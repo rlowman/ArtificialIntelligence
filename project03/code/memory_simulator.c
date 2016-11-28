@@ -39,7 +39,8 @@ void onClockInterrupt( struct PageTable * pageTable );
  **/
 void onEveryAccess( struct PageTable * pageTable,
 		    int used_frame,
-		    bool is_write );
+		    bool is_write,
+			  int theTime );
 
 /**
  * Select a frame for eviction.
@@ -61,7 +62,7 @@ int selectFrameOptimal( struct PageTable * pageTable,
 			long time );
 int selectFrameNRU( struct PageTable * pageTable );
 int selectFrameFIFO( struct PageTable * pageTable );
-int selectFrameSecondChance( struct PageTable * pageTable );
+int selectFrameSecondChance( struct PageTable * pageTable, long time );
 int selectFrameLRU( struct PageTable * pageTable );
 int selectFrameNFU( struct PageTable * pageTable );
 int selectFrameAging( struct PageTable * pageTable );
@@ -151,7 +152,8 @@ int main( int argc, char * argv[] ) {
 
     onEveryAccess( &pageTable,          // Update the page table as might be
 		   foundFrame,          //   necessary for the page we
-		   current->isWrite );  //   accessed
+		   current->isWrite,
+		   time);  //   accessed
 
     if( time % CLOCK_INTERRUPT == 0 ) { // If it is time for a clock
       onClockInterrupt( &pageTable );   //   interrupt, do one
@@ -173,8 +175,8 @@ void onClockInterrupt( struct PageTable * pageTable ) {
 
   // Clear the 'R' bit for all pages
   for( i = 0; i < pageTable->numFrames; i++ ) {
-		if(pageTable->frames[i].wasRefereneced == 1) {
-			pageTable->frames[i].counter ++;
+		if(pageTable->frames[i].wasReferenced == 1) {
+			pageTable->frames[i].nfuCounter ++;
 		}
 		pageTable->frames[i].wasReferenced = 0;
   }
@@ -182,14 +184,15 @@ void onClockInterrupt( struct PageTable * pageTable ) {
 
 void onEveryAccess( struct PageTable * pageTable,
 		    int used_frame,
-		    bool is_write ) {
+		    bool is_write,
+				int theTime) {
   // TODO: Add processing to this function as necessary for new algorithms.
 
   // Turn 'R' bit and perhaps 'M' bit on for that frame
   pageTable->frames[used_frame].wasReferenced = 1;
   if( is_write ) {
     pageTable->frames[used_frame].wasModified = 1;
-		pageTable->frames[used_frame].lruTime = time;
+		pageTable->frames[used_frame].lruTime = theTime;
   }
 }
 
@@ -209,7 +212,7 @@ int selectEvictionFrame( int algorithm,
   case ALGORITHM_FIFO:
     return selectFrameFIFO( pageTable );
   case ALGORITHM_SC:
-    return selectFrameSecondChance( pageTable );
+    return selectFrameSecondChance( pageTable, time );
   case ALGORITHM_LRU:
     return selectFrameLRU( pageTable );
   case ALGORITHM_NFU:
@@ -275,32 +278,28 @@ int selectFrameOptimal( struct PageTable * pageTable,
 int selectFrameNRU( struct PageTable * pageTable )
 {
   int found = 0;
-	for(int i = 0; i < pageTable.numFrames; i ++) {
-		PageTableEntry * temp = pageTable->frames[i];
-		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
+	for(int i = 0; i < pageTable->numFrames; i ++) {
+		if(pageTable->frames[i].wasReferenced == 0 && pageTable->frames[i].wasModified == 0) {
 			found ++;
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable.numFrames; i ++) {
-			PageTableEntry * temp = pageTable->frames[i];
-			if(temp->wasReferenced == 0 && temp->wasModified == 1) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			if(pageTable->frames[i].wasReferenced == 0 && pageTable->frames[i].wasModified == 1) {
 				found ++;
 			}
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable.numFrames; i ++) {
-			PageTableEntry * temp = pageTable->frames[i];
-			if(temp->wasReferenced == 1 && temp->wasModified == 0) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			if(pageTable->frames[i].wasReferenced == 1 && pageTable->frames[i].wasModified == 0) {
 				found ++;
 			}
 		}
 	}
 	if(found < 1) {
-		for(int i = 0; i < pageTable.numFrames; i ++) {
-			PageTableEntry * temp = pageTable->frames[i];
-			if(temp->wasReferenced == 1 && temp->wasModified == 1) {
+		for(int i = 0; i < pageTable->numFrames; i ++) {
+			if(pageTable->frames[i].wasReferenced == 1 && pageTable->frames[i].wasModified == 1) {
 				found ++;
 			}
 		}
@@ -309,9 +308,8 @@ int selectFrameNRU( struct PageTable * pageTable )
 	int returnValue = -1;
 	int count = 0;
 	int i = 0;
-	while(returnValue < 0 && i < pageTable.numFrames) {
-		PageTableEntry * temp = pageTable->frames[i];
-		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
+		if(pageTable->frames[i].wasReferenced == 0 && pageTable->frames[i].wasModified == 0) {
 			if(count == r) {
 				returnValue = i;
 			}
@@ -319,9 +317,8 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable.numFrames) {
-		PageTableEntry * temp = pageTable->frames[i];
-		if(temp->wasReferenced == 0 && temp->wasModified == 1) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
+		if(pageTable->frames[i].wasReferenced == 0 && pageTable->frames[i].wasModified == 1) {
 			if(count == r) {
 				returnValue = i;
 			}
@@ -329,9 +326,8 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable.numFrames) {
-		PageTableEntry * temp = pageTable->frames[i];
-		if(temp->wasReferenced == 1 && temp->wasModified == 0) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
+		if(pageTable->frames[i].wasReferenced == 1 && pageTable->frames[i].wasModified == 0) {
 			if(count == r) {
 				returnValue = i;
 			}
@@ -339,9 +335,8 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	i = 0;
-	while(returnValue < 0 && i < pageTable.numFrames) {
-		PageTableEntry * temp = pageTable->frames[i];
-		if(temp->wasReferenced == 1 && temp->wasModified == 1) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
+		if(pageTable->frames[i].wasReferenced == 1 && pageTable->frames[i].wasModified == 1) {
 			if(count == r) {
 				returnValue = i;
 			}
@@ -355,7 +350,7 @@ int selectFrameFIFO( struct PageTable * pageTable )
 {
 	int longest = pageTable->frames[0].fifoTime;
 	int longestIndex = 0;
-	for(int i = 1; i < pageTable.numFrames; i ++) {
+	for(int i = 1; i < pageTable->numFrames; i ++) {
 		if(pageTable->frames[i].fifoTime < longest) {
 			longestIndex = i;
 			longest = pageTable->frames[i].fifoTime;
@@ -364,14 +359,14 @@ int selectFrameFIFO( struct PageTable * pageTable )
   return longestIndex;
 }
 
-int selectFrameSecondChance( struct PageTable * pageTable )
+int selectFrameSecondChance( struct PageTable * pageTable, long theTime )
 {
 	int returnValue = -1;
 	while(returnValue < 0) {
 		int firstIndex = 0;
 		int firstTime = pageTable->frames[0].scTime;
-		for(int i = 1; i < pageTable.numFrames; i ++) {
-			if(pageTable->frames[i].scTime < firsTime) {
+		for(int i = 1; i < pageTable->numFrames; i ++) {
+			if(pageTable->frames[i].scTime < firstTime) {
 				firstIndex = i;
 			}
 		}
@@ -380,7 +375,7 @@ int selectFrameSecondChance( struct PageTable * pageTable )
 		}
 		else {
 			pageTable->frames[firstIndex].wasReferenced = 0;
-			pageTable->frames[firstIndex].scTime = time;
+			pageTable->frames[firstIndex].scTime = theTime;
 		}
 	}
 	return returnValue;
@@ -390,26 +385,26 @@ int selectFrameLRU( struct PageTable * pageTable )
 {
 	int least = pageTable->frames[0].lruTime;
 	int leastIndex = 0;
-	for(int i = 1; i < pageTable.numFrames; i ++) {
-		if(pageTable->frames[i].lruTime < longest) {
+	for(int i = 1; i < pageTable->numFrames; i ++) {
+		if(pageTable->frames[i].lruTime < least) {
 			leastIndex = i;
 			least = pageTable->frames[i].lruTime;
 		}
 	}
-  return least;
+  return leastIndex;
 }
 
 int selectFrameNFU( struct PageTable * pageTable )
 {
-	int least = pageTable->frames[0].nfuTime;
+	int least = pageTable->frames[0].nfuCounter;
 	int leastIndex = 0;
-	for(int i = 1; i < pageTable.numFrames; i ++) {
-		if(pageTable->frames[i].nfuTime < longest) {
+	for(int i = 1; i < pageTable->numFrames; i ++) {
+		if(pageTable->frames[i].nfuCounter < least) {
 			leastIndex = i;
-			least = pageTable->frames[i].nfuTime;
+			least = pageTable->frames[i].nfuCounter;
 		}
 	}
-  return least;
+  return leastIndex;
 }
 
 int selectFrameAging( struct PageTable * pageTable )

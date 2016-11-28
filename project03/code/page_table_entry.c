@@ -8,7 +8,7 @@
 
 void initializePTE( struct PageTableEntry * entry,
 		    int pageNumber,
-		    int loadTime ) {
+		    long loadTime ) {
 
   entry->pageNumber = pageNumber;
   entry->wasReferenced = 0;

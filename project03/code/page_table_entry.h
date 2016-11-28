@@ -33,27 +33,27 @@ struct PageTableEntry {
   /**
    * When will this page next be used, for Optimal algorithm, cached for later.
    **/
-  int nextAccess;
+  long nextAccess;
 
   /**
    * Counter used for NFU algorithm
    **/
-   int nfuCounter;
+  int nfuCounter;
 
    /**
     * Time compared in Fifo algorithm
     **/
-   int fifoTime;
+  long fifoTime;
 
    /**
     * Index of queue for second-chance algorithm
     **/
-   int scTime;
+  long scTime;
 
    /**
     * Time compared for lru algorithm
     **/
-   int lruTime;
+  long lruTime;
 
 };
 
@@ -66,4 +66,4 @@ struct PageTableEntry {
  **/
 void initializePTE( struct PageTableEntry * entry,
 		    int pageNumber,
-		    int loadTime );
+		    long loadTime );
