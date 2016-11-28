@@ -304,33 +304,44 @@ int selectFrameNRU( struct PageTable * pageTable )
 	}
 	int r = rand() % found;
 	int returnValue = -1;
-	bool spot = false;
 	int count = 0;
 	int i = 0;
-	while(found < 1 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 0) {
+			if(count == r) {
+				returnValue = i;
+			}
 			count ++;
 		}
 	}
 	i = 0;
-	while(found < 1 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 0 && temp->wasModified == 1) {
+			if(count == r) {
+				returnValue = i;
+			}
 			count ++;
 		}
 	}
 	i = 0;
-	while(found < 1 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 1 && temp->wasModified == 0) {
+			if(count == r) {
+				returnValue = i;
+			}
 			count ++;
 		}
 	}
 	i = 0;
-	while(found < 1 && i < pageTable->numFrames) {
+	while(returnValue < 0 && i < pageTable->numFrames) {
 		PageTableEntry * temp = pageTable->frames[i];
 		if(temp->wasReferenced == 1 && temp->wasModified == 1) {
+			if(count == r) {
+				returnValue = i;
+			}
 			count ++;
 		}
 	}
@@ -339,8 +350,12 @@ int selectFrameNRU( struct PageTable * pageTable )
 
 int selectFrameFIFO( struct PageTable * pageTable )
 {
-
-  exit( 4 );
+	long longest = -1;
+	int longestIndex = 0;
+	for(int i = 0; i < pageTable->numFrames; i ++) {
+		
+	}
+  return longstIndex;
 }
 
 int selectFrameSecondChance( struct PageTable * pageTable )
