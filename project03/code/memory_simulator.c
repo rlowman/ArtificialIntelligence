@@ -175,11 +175,12 @@ void onClockInterrupt( struct PageTable * pageTable ) {
 
   // Clear the 'R' bit for all pages
   for( i = 0; i < pageTable->numFrames; i++ ) {
+		pageTable->frames[i].agingCounter = pageTable->frames[i].agingCounter >> 1;
 		if(pageTable->frames[i].wasReferenced == 1) {
 			pageTable->frames[i].nfuCounter ++;
+			pageTable->frames[i].agingCounter = pageTable->frames[i].agingCounter | 2147483648;
 		}
 		pageTable->frames[i].wasReferenced = 0;
-		pageTable->frames[i].agingCounter >> 1;
   }
 }
 
