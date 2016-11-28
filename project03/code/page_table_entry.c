@@ -18,4 +18,5 @@ void initializePTE( struct PageTableEntry * entry,
 	entry->nfuCounter = 0;
 	entry->scTime = loadTime;
 	entry->lruTime = loadTime;
+	entry->agingCounter = 0;
 }

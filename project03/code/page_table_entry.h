@@ -55,6 +55,11 @@ struct PageTableEntry {
     **/
   long lruTime;
 
+  /**
+   * Counter used for the aging algorithm
+   **/
+  unsigned int agingCounter;
+
 };
 
 /**

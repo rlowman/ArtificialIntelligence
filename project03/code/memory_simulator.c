@@ -179,6 +179,7 @@ void onClockInterrupt( struct PageTable * pageTable ) {
 			pageTable->frames[i].nfuCounter ++;
 		}
 		pageTable->frames[i].wasReferenced = 0;
+		pageTable->frames[i].agingCounter >> 1;
   }
 }
 
@@ -305,7 +306,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 		}
 	}
 	int r = rand() % found;
-	int returnValue = -1;
+	int returnValue = INVALID;
 	int count = 0;
 	int i = 0;
 	while(returnValue < 0 && i < pageTable->numFrames) {
@@ -315,6 +316,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 			}
 			count ++;
 		}
+		i ++;
 	}
 	i = 0;
 	while(returnValue < 0 && i < pageTable->numFrames) {
@@ -324,6 +326,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 			}
 			count ++;
 		}
+		i ++;
 	}
 	i = 0;
 	while(returnValue < 0 && i < pageTable->numFrames) {
@@ -333,6 +336,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 			}
 			count ++;
 		}
+		i ++;
 	}
 	i = 0;
 	while(returnValue < 0 && i < pageTable->numFrames) {
@@ -342,6 +346,7 @@ int selectFrameNRU( struct PageTable * pageTable )
 			}
 			count ++;
 		}
+		i ++;
 	}
   return returnValue;
 }
@@ -361,13 +366,20 @@ int selectFrameFIFO( struct PageTable * pageTable )
 
 int selectFrameSecondChance( struct PageTable * pageTable, long theTime )
 {
-	int returnValue = -1;
+	int returnValue = INVALID;
 	while(returnValue < 0) {
 		int firstIndex = 0;
 		int firstTime = pageTable->frames[0].scTime;
 		for(int i = 1; i < pageTable->numFrames; i ++) {
 			if(pageTable->frames[i].scTime < firstTime) {
 				firstIndex = i;
+				firstTime = pageTable->frames[i].scTime;
+			}
+			else if(pageTable->frames[i].scTime == firstTime) {
+				if(pageTable->frames[i].fifoTime < pageTable->frames[firstIndex].fifoTime) {
+					firstTime = pageTable->frames[i].scTime;
+					firstIndex = i;
+				}
 			}
 		}
 		if(pageTable->frames[firstIndex].wasReferenced == 0) {
@@ -409,7 +421,13 @@ int selectFrameNFU( struct PageTable * pageTable )
 
 int selectFrameAging( struct PageTable * pageTable )
 {
-  // TODO: Write this function
-  printf( "Error: The Aging algorithm has not yet been implemented.\n" );
-  exit( 4 );
+	int least = pageTable->frames[0].agingCounter;
+	int leastIndex = 0;
+	for(int i = 1; i < pageTable->numFrames; i ++) {
+		if(pageTable->frames[i].agingCounter < least) {
+			leastIndex = i;
+			least = pageTable->frames[i].agingCounter;
+		}
+	}
+  return leastIndex;
 }
