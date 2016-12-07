@@ -1,0 +1,16 @@
+Robert Lowman
+Homework 4 Questions
+CS364 Operating Systems
+12/6/16
+
+1. First Fit: 20MB, 10MB, 18MB
+   Best Fit: 12MB, 10MB, 9MB
+   Worst Fit: 20MB, 18MB, 15MB
+
+2. 20000: page number - 4   offset - 3616
+   32768: page number - 8   offset - 0
+   60000: page number - 14  offset - 2656
+
+3. 1048576
+
+4. 
