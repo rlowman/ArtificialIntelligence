@@ -11,6 +11,22 @@ CS364 Operating Systems
    32768: page number - 8   offset - 0
    60000: page number - 14  offset - 2656
 
-3. 1048576
+3. 1048576 - pages exist
+   3 X pagesize + offset = 116 bit page size
 
-4. 
+4. These algorithms would be awful for this process as
+   they base the order of processes of certain aspects of
+   each process, so it would be hard to go from 0-511 in order
+   and then after that determine a process is next by random.
+   An algorithm that would be optimal for this problem is an algorithm
+   that gives each page a value for the order it is between 0 511,
+   which could be easily looked up to determine which one is next.
+   Next, it would have to have the ability to randomly select a page,
+   so it can be selected in between each order.
+
+5. FIFO - 4
+   LRU  - 3
+
+6.
+
+7. 
