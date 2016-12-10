@@ -6,6 +6,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
+#include <time.h>
 
 #define BUFFER_SIZE 10000
 
@@ -18,7 +22,17 @@ void print_mod_time( time_t mtime );
 
 void print_all();
 
+void print_information();
+
+struct stat fileStat;
+
 struct dirent *d;
+
+struct passwd *pwd;
+
+struct group *grp;
+
+struct tm *tm;
 
 DIR *dir;
 
@@ -39,7 +53,11 @@ int main(int argc, char * argv[]) {
       print_all();
     }
     else if (strcmp(argv[1], "-l") == 0 ) {
-
+      while ((d = readdir(dir)) != NULL) {
+        if(d->d_name[0] != '.'){
+          print_information(d->d_name);
+        }
+      }
     }
     else {
       printf("Invalid arg: %s", argv[1]);
@@ -49,7 +67,9 @@ int main(int argc, char * argv[]) {
   else if(argc == 3){
     if(((strcmp(argv[1], "-l") == 0) && (strcmp(argv[2], "-a") == 0)) ||
       ((strcmp(argv[1], "-a") == 0) && (strcmp(argv[2], "-l") == 0))) {
-        print_all();
+        while ((d = readdir(dir)) != NULL) {
+          print_information(d->d_name);
+        }
     }
     else {
       printf("Invalid args");
@@ -70,8 +90,89 @@ void print_all(){
   }
 }
 
-void print_all_information(){
-
+void print_information(char * name){
+  if(stat(name,&fileStat) < 0) {
+    printf("Error Reading File: %s", name);
+  }
+  else {
+    if(S_ISDIR(fileStat.st_mode)) {
+      printf("d");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IRUSR) {
+      printf("r");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IWUSR){
+      printf("w");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IXUSR){
+      printf("x");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IRGRP) {
+      printf("r");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IWGRP) {
+      printf("w");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IXGRP){
+      printf("x");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IROTH) {
+      printf("r");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IWOTH){
+      printf("w");
+    }
+    else {
+      printf("-");
+    }
+    if(fileStat.st_mode & S_IXOTH){
+      printf("x");
+    }
+    else {
+      printf("-");
+    }
+    printf(" %d", fileStat.st_nlink);
+    if ((pwd = getpwuid(fileStat.st_uid)) != NULL){
+      printf(" %-8.8s", pwd->pw_name);
+    }
+    else{
+      printf(" %-8d", fileStat.st_uid);
+    }
+    if ((grp = getgrgid(fileStat.st_gid)) != NULL) {
+      printf(" %-8.8s", grp->gr_name);
+    }
+    else {
+      printf(" %-8d", fileStat.st_gid);
+    }
+    printf(" %8jd", fileStat.st_size);
+    print_mod_time(fileStat.st_ctime);
+    printf(" %s", name);
+    printf("\n");
+  }
 }
 
 void print_mod_time( time_t mtime )
